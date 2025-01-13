@@ -1,0 +1,75 @@
+version: '3.8'
+
+services:
+  api:
+    build: .
+    command: uvicorn src.api.endpoints:app --host 0.0.0.0 --port 8000 --reload
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    environment:
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
+      - FEATURE_STORE_PATH=/app/feature_store
+    depends_on:
+      - kafka
+      - mlflow
+      - feature-store
+
+  streaming:
+    build: .
+    command: python -m src.streaming.consumer
+    volumes:
+      - .:/app
+    environment:
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+    depends_on:
+      - kafka
+
+  dashboard:
+    build: .
+    command: streamlit run src.monitoring.dashboard:main
+    ports:
+      - "8501:8501"
+    volumes:
+      - .:/app
+    depends_on:
+      - api
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.3.0
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+    ports:
+      - "2181:2181"
+
+  kafka:
+    image: confluentinc/cp-kafka:7.3.0
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:latest
+    ports:
+      - "5000:5000"
+    environment:
+      - MLFLOW_TRACKING_URI=sqlite:///mlflow.db
+    volumes:
+      - ./mlflow:/mlflow
+
+  feature-store:
+    image: feast/feature-store:latest
+    ports:
+      - "6566:6566"
+    volumes:
+      - ./feature_store:/feature_store

@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.env
+.venv
+venv/
+ENV/
+
+# Data and Models
+data/
+models/*.pkl
+monitoring/reports/
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Logs
+*.log
+
+# MLflow
+mlruns/
+mlflow.db
+
+# Feast
+feature_store/registry.db
+feature_store/online_store.db
+
+# Docker
+.docker/ 
