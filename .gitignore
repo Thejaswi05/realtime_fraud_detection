@@ -33,3 +33,11 @@ feature_store/online_store.db
 
 # Docker
 .docker/ 
+
+# Large data files
+data/creditcard.csv
+*.csv
+
+#mlflow artifacts
+mlflow/artifacts
+mlflow/db/

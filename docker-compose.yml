@@ -10,12 +10,10 @@ services:
       - .:/app
     environment:
       - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
-      - MLFLOW_TRACKING_URI=http://mlflow:5000
-      - FEATURE_STORE_PATH=/app/feature_store
+      - MLFLOW_TRACKING_URI=http://mlflow:5001
     depends_on:
       - kafka
       - mlflow
-      - feature-store
 
   streaming:
     build: .
@@ -26,6 +24,20 @@ services:
       - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
     depends_on:
       - kafka
+
+  train:
+    build: .
+    command: python -m src.models.train
+    volumes:
+      - .:/app
+      - ./data:/app/data
+      - ./models:/app/models
+      - ./mlflow/artifacts:/mlflow/artifacts
+    environment:
+      - MLFLOW_TRACKING_URI=http://mlflow:5001
+      - PYTHONPATH=/app
+    depends_on:
+      - mlflow
 
   dashboard:
     build: .
@@ -61,15 +73,30 @@ services:
   mlflow:
     image: ghcr.io/mlflow/mlflow:latest
     ports:
-      - "5000:5000"
+      - "5001:5001"
+    command: >
+      mlflow server 
+      --host 0.0.0.0 
+      --port 5001 
+      --backend-store-uri sqlite:///mlflow.db 
+      --artifacts-destination /mlflow/artifacts 
+      --serve-artifacts
     environment:
-      - MLFLOW_TRACKING_URI=sqlite:///mlflow.db
+      - MLFLOW_TRACKING_URI=http://localhost:5001
     volumes:
-      - ./mlflow:/mlflow
+      - ./mlflow/artifacts:/mlflow/artifacts
+      - ./mlflow/db:/mlflow/db
 
-  feature-store:
-    image: feast/feature-store:latest
+  playground:
+    build: .
+    command: streamlit run src/streamlit_playground/playground.py
     ports:
-      - "6566:6566"
+      - "8501:8501"
     volumes:
-      - ./feature_store:/feature_store
+      - .:/app
+      - ./mlflow/artifacts:/mlflow/artifacts
+    environment:
+      - MLFLOW_TRACKING_URI=http://mlflow:5001
+      - PYTHONPATH=/app
+    depends_on:
+      - mlflow
