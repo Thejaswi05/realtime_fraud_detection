@@ -11,8 +11,8 @@ A machine learning system for real-time credit card fraud detection using MLflow
 
 1. Clone the repository:
 
-
-git clone <git@github.com:Thejaswi05/realtime_fraud_detection.git>
+```bash
+git clone git@github.com:Thejaswi05/realtime_fraud_detection.git
 
 cd realtime-fraud-detection
 
@@ -130,16 +130,9 @@ docker-compose run --rm train
 5. Create a Pull Request
 
 
-This README:
+## This README:
 1. Provides clear installation steps
 2. Explains how to run each component
 3. Details the Streamlit playground usage
 4. Includes troubleshooting guides
 5. Explains project structure
-
-Would you like me to:
-1. Add more detailed configuration options?
-2. Include example API calls?
-3. Add environment variable documentation?
-4. Expand the troubleshooting section?
-```
