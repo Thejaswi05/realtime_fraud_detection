@@ -39,16 +39,6 @@ services:
     depends_on:
       - mlflow
 
-  dashboard:
-    build: .
-    command: streamlit run src.monitoring.dashboard:main
-    ports:
-      - "8501:8501"
-    volumes:
-      - .:/app
-    depends_on:
-      - api
-
   zookeeper:
     image: confluentinc/cp-zookeeper:7.3.0
     environment:
