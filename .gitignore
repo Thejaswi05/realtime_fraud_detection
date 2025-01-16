@@ -41,3 +41,6 @@ data/creditcard.csv
 #mlflow artifacts
 mlflow/artifacts
 mlflow/db/
+
+#evidently reports
+reports/

@@ -89,4 +89,34 @@ services:
       - MLFLOW_TRACKING_URI=http://mlflow:5001
       - PYTHONPATH=/app
     depends_on:
+    - mlflow
+
+  monitoring:
+    build: .
+    volumes:
+      - .:/app
+      - ./reports:/app/reports
+    environment:
+      - PYTHONPATH=/app
+      - MLFLOW_TRACKING_URI=http://mlflow:5001
+    depends_on:
       - mlflow
+      - api
+    command: python src/monitoring/evidently_demo.py
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+        reservations:
+          memory: 2G
+
+  # Optional: Add this service if you want to view reports easily
+  report-server:
+    image: python:3.9
+    volumes:
+      - ./reports:/reports
+    working_dir: /reports
+    ports:
+      - "8088:8088"
+    command: python -m http.server 8088
+    
